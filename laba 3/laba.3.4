@@ -1,0 +1,93 @@
+# Задание task_03_04_02.
+
+# Дан файл, полученный на выходе задачи № 3.4.1 (data.txt или bad_data.txt):
+# загрузите список чисел;
+# вычислите их сумму и максимум и допишите их в файл.
+# Выполнив программу несколько раз, убедитесь, что новые значения учитываются при подсчете.
+# Если файл прочитать не удается, программа должна прекратить чтение и сообщить об этом пользователю.
+
+# Выполнил: Князева А.П.
+# Группа: ЦИБ-251
+
+with open('data.txt', 'w') as f:
+    f.write("1.1\n2.2\n3.3\n4.4\n5.5\n")
+
+with open('bad_data.txt', 'w') as f:
+    f.write("10.0\nэто не число\n20.0\n")
+
+import sys
+import os
+
+def load_data(filename):
+    """Загрузить список вещественных чисел из файла 'filename'.
+
+    Функция не обрабатывает исключения."""
+    numbers = []
+    with open(filename, 'r') as file:
+        for line in file:
+            line = line.strip()  # Убираем пробелы и переносы строк
+            if line:  # Пропускаем пустые строки
+                numbers.append(float(line))  # Может вызвать ValueError
+    return numbers
+
+
+def append_to_file(new_values, filename):
+    """Дописать данные в файл.
+
+    Параметры:
+        - new_values (list of float): список новых вещественных чисел;
+        - filename (str): имя файла, куда дописывать результаты.
+    """
+    # Шаг 1: Читаем существующие числа из файла, если он существует
+    existing_numbers = []
+    if os.path.exists(filename):
+        try:
+            existing_numbers = load_data(filename)
+        except Exception:
+            # Если ошибка при чтении — считаем файл пустым
+            existing_numbers = []
+
+    # Шаг 2: Объединяем старые и новые числа
+    all_numbers = existing_numbers + new_values
+
+    # Если нет чисел — ничего не делаем
+    if not all_numbers:
+        return
+
+    # Шаг 3: Вычисляем сумму и максимум
+    total_sum = sum(all_numbers)
+    max_value = max(all_numbers)
+
+    # Шаг 4: Дописываем сумму и максимум в файл
+    with open(filename, 'a') as file:
+        file.write(f"{total_sum}\n")
+        file.write(f"{max_value}\n")
+
+
+try:
+    # Введите имя входного файла, например: data.txt  или  bad_data.txt
+    input_filename = input("Введите имя входного файла: ").strip()
+
+    output_filename = "output.txt"
+
+    # Загружаем данные из входного файла
+    values = load_data(input_filename)
+
+    # Дописываем результаты в выходной файл
+    append_to_file(values, output_filename)
+
+    print(f"Данные успешно обработаны из '{input_filename}' и добавлены в файл '{output_filename}'.")
+
+except FileNotFoundError:
+    print("Указанный входной файл не существует.")
+
+except (IOError, ValueError) as err:
+    print("Ошибка при чтении входного файла или записи выходного файла:", err)
+
+except EOFError:
+    print("Ошибка ввода: Имя входного файла не указано.")
+
+except Exception as err:
+    print("Произошла непредвиденная ошибка!")
+    print("Тип:", type(err))
+    print("Описание:", err)
